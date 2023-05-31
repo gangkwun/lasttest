@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="나와 닮은 연예인 찾기!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    <meta property="og:description" content="당신과 닮은 연예인은 누구일까요? 지금 확인해보세요!">
+    <title>나와 닮은 연예인 찾기</title>
+    <link rel = "stylesheet" href="src/style.css">
+</head>
+<body>
+    <!--//3. 백그라운드 비디오 시작.-->
+    <div class="video-background">
+        <div class="video-forground">
+            <!--//4. 유튜브 소스 코드 붙이기-->
+            <!--//4.1 높이와 넓이를 100%로 수정하자.-->
+            <!--//4.2 ? 뒤에 옵션을 넣어 동영상을 플레이시켜 보자. -->
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/WzDtJ0g00Kc?controls=0&mute=1&loop=5&autoplay=1&rel=0&controls=0&showinfo=0" 
+            title="YouTube video player" frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen></iframe>
+        </div>
+    </div>
+<!--//5. 메인 cont 추가-->
+    <div class="cont-main">
+        <div class="tit">
+            나와 닮은 연예인 찾기
+            <!--//6. assets의 이미지 가져오기-->
+            <div class="img-slide">
+                <img class="img-slide-item active" src="assets/1.png" alt="이미지">
+                <img class="img-slide-item" src="assets/2.png" alt="이미지">
+                <img class="img-slide-item" src="assets/3.png" alt="이미지">
+                <img class="img-slide-item" src="assets/4.png" alt="이미지">
+                <img class="img-slide-item" src="assets/5.png" alt="이미지">
+                <img class="img-slide-item" src="assets/6.png" alt="이미지">
+            </div>
+            <!--//7. 버튼 클래스 지정-->
+            <button type="button"  onclick="init()" class="btn-test-start">테스트 시작!</button>
+        </div>
+    </div>
+    <!--//8. 내얼굴 인식하기 및 결과보기 버튼 추가-->
+    <div class="cont">
+        <div class="tit">내 얼굴 인식하기</div>
+        <div id="webcam-container"></div>
+        <button type="button" class="btn-start">결과 보기</button>
+    </div>
+    <!--//9. gif 이미지 가져오기-->
+    <div class="cover">
+        <img src="assets/loading.gif" alt="">
+    </div>
+    <!--//10. myScript.js 파일추가 및 코드 추가-->
+    <script src="src/myScript.js"></script>
+    <div id="label-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+
+    //11. 결과값을 넣기위한 변수 생성
+    let result;
+    //12. 버튼 이벤트를 위한 dom선택
+    let btn = document.querySelector(".btn-start");
+    //13. 웹캠 크기 조정
+    webcam = new tmImage.Webcam(390, 390, flip); // width, height, flip
+    //14. 모델 로딩 부분 없애기
+    cover.style.display = "none"
+
+
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "./my_model/";
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    // Load the image model and setup the webcam
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // append elements to the DOM
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    async function loop() {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    // run the webcam image through the image model
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        const prediction = await model.predict(webcam.canvas);
+            if (prediction[0].className == '유재석' && prediction[0].probability.toFixed(2) > 0.60) {
+                window.location.href = "./유재석.html";
+            } else if (prediction[1].className == '강호동' && prediction[1].probability.toFixed(2) > 0.60) {
+                window.location.href = "./강호동.html";
+            } else if (prediction[2].className == '공유' && prediction[2].probability.toFixed(2) > 0.60) {
+                window.location.href = "./공유.html";
+            } else {
+                window.location.href = "./fail.html";
+            }
+    }
+</script>
+</body>
+</html>
